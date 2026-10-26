@@ -1,5 +1,9 @@
 # 诉状工作人员后台
 
+**在线工作台：[点击打开 GitHub 网页版](https://tophung48162-cell.github.io/lawsuit-staff-admin/)**
+
+GitHub Pages 托管页面，案件与收退款连接原云端数据库，免登录使用。
+
 人身损害诉状服务的工作人员网页后台，支持手机与电脑。采用 React、TypeScript、Vinext、Cloudflare Workers 和 D1 数据库。
 
 ## 功能
