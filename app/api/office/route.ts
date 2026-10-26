@@ -2,15 +2,26 @@ import { env } from 'cloudflare:workers';
 const scenes=['交通事故','公共场所受伤','故意伤害','医疗损害','产品损害','动物致害','高空坠物','劳务受伤','校园伤害','工伤相关','其他'];
 const statuses=['待处理','补充材料','起草中','待复核','已交付','已关闭'];
 const channels=['微信','支付宝','银行转账','现金','其他'];
-const response=(x:unknown,status=200)=>Response.json(x,{status,headers:{'Cache-Control':'no-store'}});
+const PAGES_ORIGIN='https://tophung48162-cell.github.io';
+function corsHeaders(req:Request):Record<string,string>{
+ const origin=req.headers.get('origin');
+ return origin===PAGES_ORIGIN?{'Access-Control-Allow-Origin':PAGES_ORIGIN,'Vary':'Origin','Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type'}:{};
+}
+const responseFor=(req:Request)=>(x:unknown,status=200)=>Response.json(x,{status,headers:{'Cache-Control':'no-store',...corsHeaders(req)}});
+export async function OPTIONS(req:Request){
+ const allowed=req.headers.get('origin')===PAGES_ORIGIN;
+ return new Response(null,{status:allowed?204:403,headers:corsHeaders(req)});
+}
 function str(v:unknown,max=200){if(typeof v!=='string'||v.length>max)throw Error('字段格式不正确');return v.trim();}
-export async function GET(){
+export async function GET(req:Request){
+ const response=responseFor(req);
  if(!env.DB)return response({error:'数据库尚未连接'},503);
  const [c,l,a]=await Promise.all([env.DB.prepare('SELECT * FROM cases ORDER BY created_at DESC').all(),env.DB.prepare('SELECT * FROM ledger ORDER BY date DESC, created_at DESC').all(),env.DB.prepare('SELECT * FROM audit ORDER BY created_at DESC LIMIT 100').all()]);
  return response({cases:c.results,ledger:l.results,audit:a.results});
 }
 export async function POST(req:Request){
- if(new URL(req.url).origin!==req.headers.get('origin'))return response({error:'无效请求来源'},403);
+ const response=responseFor(req);
+ if(new URL(req.url).origin!==req.headers.get('origin')&&req.headers.get('origin')!==PAGES_ORIGIN)return response({error:'无效请求来源'},403);
  if(!env.DB)return response({error:'数据库尚未连接'},503);
  try{
  const b=await req.json() as Record<string,unknown>;const db=env.DB;const now=new Date().toISOString();const actor='公开访客';
