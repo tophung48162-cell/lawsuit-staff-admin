@@ -63,3 +63,9 @@ worker/                 Cloudflare Worker 入口
 ## 许可证与第三方声明
 
 业务代码使用 [MIT License](LICENSE)。保留的 Sites Vite 插件见 `scripts/vite/sites-vite-plugin.LICENSE`，样式资源声明见 `vendor/shadcn-tailwind-4.13.0.LICENSE.md`；依赖包适用各自许可证。
+
+## GitHub Pages 前端
+
+执行 `npm run build:pages` 生成 `docs/`，在仓库 Settings → Pages 选择 `main` 分支的 `/docs` 目录发布。该入口使用 `vite.pages.config.ts` 中的云端 API 地址；案件及收退款仍由该 API 的数据库保存。更换服务地址后需重新构建。
+
+首次连接必须在 API 端允许该 GitHub Pages 来源的 CORS 请求与 JSON POST 预检。若接口受到网络或微信拦截，网页会提示无法连接；不会把未保存的数据报为成功。本地静态网页不保存独立的真实台账。
